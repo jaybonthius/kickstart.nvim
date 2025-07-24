@@ -2,8 +2,6 @@
 
 ## Introduction
 
-Test commit
-
 A starting point for Neovim that is:
 
 * Small
