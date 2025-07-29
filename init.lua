@@ -105,7 +105,7 @@ vim.g.python3_host_prog = vim.fn.getcwd() .. '/.venv/bin/python'
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Set tab width to 4 spaces
 vim.o.tabstop = 4
