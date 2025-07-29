@@ -157,6 +157,7 @@ vim.o.splitbelow = true
 --   and `:help lua-options-guide`
 vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.autoread = true
 
 -- Preview substitutions live, as you type!
 vim.o.inccommand = 'split'
@@ -205,6 +206,8 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+
+vim.keymap.set('n', '<leader>e', function() require('mini.files').open() end, { desc = 'Open file explorer' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -555,6 +558,35 @@ require('lazy').setup({
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
           map('grd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          local go_to_definition = function()
+            if vim.bo.filetype == "go" then
+              vim.lsp.buf.definition({
+                on_list = function(options)
+                  if options == nil or options.items == nil or #options.items == 0 then
+                    return
+                  end
+
+                  local targetFile = options.items[1].filename
+                  local prefix = string.match(targetFile, "(.-)_templ%.go$")
+
+                  if prefix then
+                    local function_name = vim.fn.expand("<cword>")
+                    options.items[1].filename = prefix .. ".templ"
+
+                    vim.fn.setqflist({}, " ", options)
+                    vim.api.nvim_command("cfirst")
+
+                    vim.api.nvim_command("silent! /templ " .. function_name)
+                  else
+                    require('telescope.builtin').lsp_definitions()
+                  end
+                end,
+              })
+            else
+              require('telescope.builtin').lsp_definitions()
+            end
+          end
+          map('grd', go_to_definition, '[G]oto [D]efinition')
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
@@ -945,7 +977,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'templ' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
