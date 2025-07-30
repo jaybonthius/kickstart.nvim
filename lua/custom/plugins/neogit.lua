@@ -1,6 +1,8 @@
 return {
   'NeogitOrg/neogit',
   dependencies = {
+    'nvim-lua/plenary.nvim',
+    'sindrets/diffview.nvim',
     'nvim-telescope/telescope.nvim',
   },
   config = function()
@@ -9,4 +11,3 @@ return {
     vim.keymap.set('n', '<leader>gs', neogit.open, { desc = '[G]it [S]tatus (Neogit)' })
   end,
 }
-
