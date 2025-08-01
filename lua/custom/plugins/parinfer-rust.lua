@@ -1,4 +1,4 @@
 return {
-  "eraserhd/parinfer-rust",
-  build = "cargo build --release"
+  'eraserhd/parinfer-rust',
+  build = 'cargo build --release',
 }
