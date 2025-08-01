@@ -107,8 +107,14 @@ vim.o.number = true
 --  Experiment for yourself to see if you like it!
 vim.o.relativenumber = true
 
--- Set tab width to 4 spaces
-vim.o.tabstop = 4
+-- Complete tab configuration
+vim.o.tabstop = 4 -- Width of tab character
+vim.o.shiftwidth = 4 -- Size of an indent
+vim.o.softtabstop = 4 -- Number of spaces in tab when editing
+vim.o.expandtab = true -- Use spaces instead of tabs
+vim.o.smarttab = true -- Smart tab behavior
+vim.o.smartindent = true -- Smart indentation
+vim.o.autoindent = true -- Auto indentation
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -207,7 +213,9 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
-vim.keymap.set('n', '<leader>e', function() require('mini.files').open() end, { desc = 'Open file explorer' })
+vim.keymap.set('n', '<leader>e', function()
+  require('mini.files').open()
+end, { desc = 'Open file explorer' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -559,29 +567,29 @@ require('lazy').setup({
           --  To jump back, press <C-t>.
           map('grd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
           local go_to_definition = function()
-            if vim.bo.filetype == "go" then
-              vim.lsp.buf.definition({
+            if vim.bo.filetype == 'go' then
+              vim.lsp.buf.definition {
                 on_list = function(options)
                   if options == nil or options.items == nil or #options.items == 0 then
                     return
                   end
 
                   local targetFile = options.items[1].filename
-                  local prefix = string.match(targetFile, "(.-)_templ%.go$")
+                  local prefix = string.match(targetFile, '(.-)_templ%.go$')
 
                   if prefix then
-                    local function_name = vim.fn.expand("<cword>")
-                    options.items[1].filename = prefix .. ".templ"
+                    local function_name = vim.fn.expand '<cword>'
+                    options.items[1].filename = prefix .. '.templ'
 
-                    vim.fn.setqflist({}, " ", options)
-                    vim.api.nvim_command("cfirst")
+                    vim.fn.setqflist({}, ' ', options)
+                    vim.api.nvim_command 'cfirst'
 
-                    vim.api.nvim_command("silent! /templ " .. function_name)
+                    vim.api.nvim_command('silent! /templ ' .. function_name)
                   else
                     require('telescope.builtin').lsp_definitions()
                   end
                 end,
-              })
+              }
             else
               require('telescope.builtin').lsp_definitions()
             end
@@ -807,11 +815,19 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        racket = { 'raco_fmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
+      },
+      formatters = {
+        raco_fmt = {
+          command = 'raco',
+          args = { 'fmt', '-i', '$FILENAME' },
+          stdin = false,
+        },
       },
     },
   },
@@ -1012,12 +1028,12 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
