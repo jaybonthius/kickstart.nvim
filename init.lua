@@ -133,6 +133,12 @@ end)
 -- Enable break indent
 vim.o.breakindent = true
 
+-- Enable word wrap at word boundaries (whole words)
+vim.o.linebreak = true
+
+-- Optional: Add visual indicator for wrapped lines
+vim.o.showbreak = "↳ "
+
 -- Save undo history
 vim.o.undofile = true
 
@@ -189,6 +195,11 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+-- Toggle diagnostics globally (available for all buffers)
+vim.keymap.set('n', '<leader>td', function()
+  vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+end, { desc = '[T]oggle [D]iagnostics' })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -228,6 +239,14 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.hl.on_yank()
+  end,
+})
+
+-- Associate .scrbl files with racket filetype
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = '*.scrbl',
+  callback = function()
+    vim.bo.filetype = 'racket'
   end,
 })
 
@@ -358,6 +377,7 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>td', desc = '[T]oggle [D]iagnostics' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
@@ -664,6 +684,7 @@ require('lazy').setup({
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
           end
+
         end,
       })
 
@@ -967,12 +988,8 @@ require('lazy').setup({
       --  - ci'  - [C]hange [I]nside [']quote
       require('mini.ai').setup { n_lines = 500 }
 
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
-      --
-      -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - sd'   - [S]urround [D]elete [']quotes
-      -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      -- Note: mini.surround is now configured as a separate plugin
+      -- See lua/custom/plugins/mini-surround.lua
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
@@ -988,6 +1005,16 @@ require('lazy').setup({
       statusline.section_location = function()
         return '%2l:%-2v'
       end
+
+      -- Add indentscope with basic configuration
+      require('mini.indentscope').setup {
+        symbol = '│',
+        options = { try_as_border = true },
+        draw = {
+          delay = 100,
+          animation = require('mini.indentscope').gen_animation.none(),
+        },
+      }
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -1029,7 +1056,7 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.indent_line',
+  -- require 'kickstart.plugins.indent_line', -- Disabled in favor of mini.indentscope
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
